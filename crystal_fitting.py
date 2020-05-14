@@ -95,7 +95,7 @@ def fine_fit(shell, crystal, neighbor_cutoff_distance):
         nn_indices = shell_kd.query_ball_point(crysatm_coords, neighbor_cutoff_distance)
         nn_data.append(nn_indices)
     number_interactions = [len(x) for x in nn_data]
-    number_non_zero_neighbors = len([x for x in nn_data if len(x) > 0]) 
+#    number_non_zero_neighbors = len([x for x in nn_data if len(x) > 0]) 
 
     return nn_data, number_interactions
 
