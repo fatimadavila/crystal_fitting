@@ -93,7 +93,6 @@ def fine_fit(shell, crystal, neighbor_cutoff_distance):
         crysatm_coords = crysatm_coord_array[index]
         len_crysatm = np.linalg.norm(crysatm_coords)
         nn_indices = shell_kd.query_ball_point(crysatm_coords, neighbor_cutoff_distance)
-<<<<<<< HEAD
         nn_in_temp = []
         nn_out_temp = []
         for idx_2 in nn_indices:
@@ -104,11 +103,9 @@ def fine_fit(shell, crystal, neighbor_cutoff_distance):
                 nn_in_temp.append(idx_2)
         nn_data_in.append(nn_in_temp)
         nn_data_out.append(nn_out_temp)
-=======
         nn_data.append(nn_indices)
     number_interactions = [len(x) for x in nn_data]
 #    number_non_zero_neighbors = len([x for x in nn_data if len(x) > 0]) 
->>>>>>> 9d8638931e6ae593bc6b03677787d0c7a7e52d3b
 
     return nn_data_in, nn_data_out
 
