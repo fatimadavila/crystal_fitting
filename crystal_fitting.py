@@ -13,7 +13,7 @@ def keep_heavy_bbo_only(pdb_lines_dictionary):
                     data[column].append(pdb_lines_dictionary[column][idx])
                 except IndexError:
                     print(column)
-    print('From {0} atoms, kept {1} backbone atoms "CA, O, N"'.format(len(pdb_lines_dictionary['element']),
+    print('From {0} atoms, kept {1} backbone atoms "CA, O, N, C"'.format(len(pdb_lines_dictionary['element']),
                                                                       len(data['element'])))
 
     return data
@@ -118,8 +118,8 @@ def visualize_fine_fit(nn_data, shell_data, crystal_data):
     shell_indices = list(set_shell_indices)
     pdb_crystal_data = indices_to_data_structure(crystal_indices, crystal_data)
     pdb_shell_data = indices_to_data_structure(shell_indices, shell_data)
-    data_structure_to_pdb('finefit_crystal.pdb', pdb_crystal_data)
-    data_structure_to_pdb('finefit_shell.pdb', pdb_shell_data)
+    data_structure_to_pdb('finefit_nanocrystal.pdb', pdb_crystal_data)  # @pylesh maybe customize this output?
+    data_structure_to_pdb('finefit_nanocage.pdb', pdb_shell_data)  # @pylesh maybe customize this output?
 
 
 if __name__ == '__main__':
@@ -136,18 +136,20 @@ if __name__ == '__main__':
     surface_crystal_data = indices_to_data_structure(surface_crystal_indices, crystal_data)
     # data_structure_to_pdb('surface_crystal_2_test.pdb', surface_crystal_data)  # Visualize results in Pymol
 
-    # # Coarse fitting metrics
-    # fit, spill_crystal_indices, clash_shell_indices, nn_distances = fit_check(bbo_shell_data, surface_crystal_data)
-    # nn_dist_array = np.array(nn_distances)
-    # min_nn_distance = np.amin(nn_dist_array)
-    # mean_nn_distance = np.mean(nn_dist_array)
-    # std_nn_distance = np.std(nn_dist_array)
-    # max_nn_distance = np.amax(nn_dist_array)
-    # print('Metrics of nearest neighbor distances from crystal to the closest protein backbone atom')
-    # print('Minimum\t\t\t\tAverage\t\t\tStandard Deviation\tMaximum')
-    # print(min_nn_distance, mean_nn_distance, std_nn_distance, max_nn_distance)
-    # percentage_poking = len(spill_crystal_indices)*100/len(surface_crystal_indices)
-    # print('Percentage of crystal surface atoms poking through the protein nanocage: '+str(percentage_poking))
+    # Coarse fitting metrics
+    fit, spill_crystal_indices, clash_shell_indices, nn_distances = fit_check(bbo_shell_data, surface_crystal_data)
+    nn_dist_array = np.array(nn_distances)
+    min_nn_distance = np.amin(nn_dist_array)
+    mean_nn_distance = np.mean(nn_dist_array)
+    std_nn_distance = np.std(nn_dist_array)
+    max_nn_distance = np.amax(nn_dist_array)
+    print('METRICS OF NEAREST NEIGHBOR DISTANCES (Å) FROM CRYSTAL TO CLOSEST PROTEIN BACKBONE ATOM')
+    print('\tMINIMUM            ', min_nn_distance)
+    print('\tAVERAGE            ', mean_nn_distance)
+    print('\tSTANDARD DEVIATION ', std_nn_distance)
+    print('\tMAXIMUM            ', max_nn_distance)
+    percentage_poking = len(spill_crystal_indices)*100/len(surface_crystal_indices)
+    print('PERCENTAGE OF CRYSTAL SURFACE ATOMS POKING THROUGH THE PROTEIN NANOCAGE: '+str(percentage_poking))
 
     # # In this case, write pdbs to visualize if the atoms are actually clashing, or poking through the pores.
     # spill_crystal_data = indices_to_data_structure(spill_crystal_indices, surface_crystal_data)
@@ -163,18 +165,18 @@ if __name__ == '__main__':
     nonzero_interactions_in = [len(x) for x in nn_data_in if len(x) > 0]
     nonzero_interactions_out = [len(x) for x in nn_data_out if len(x) > 0]
     # print(nonzero_interactions_in)
+    # print(nonzero_interactions_out)
     total_interactions_in = len(nonzero_interactions_in)
-    number_interactions_out = len(nonzero_interactions_out)
-    print(total_interactions_in)
-    print(number_interactions_out)
-    # number_non_zero_neighbors_in = len([x for x in nn_data_in if len(x) > 0]) 
-    # print(number_non_zero_neighbors_in)
-
-    min_interactions = min(nonzero_interactions_in)
-    average_interactions = sum(nonzero_interactions_in)/len(nonzero_interactions_in)
-    max_interactions = max(nonzero_interactions_in)
-    print(min_interactions)
-    print(average_interactions)
-    print(max_interactions)
-    # visualize_fine_fit(nn_data, bbo_shell_data, surface_crystal_data)
-
+    total_interactions_out = len(nonzero_interactions_out)
+    print('\nINTERACTIONS WITHIN {0}Å FROM THE SURFACE OF THE NANOCRYSTAL'.format(str(neighbor_cutoff_distance)))
+    print('\tOUTSIDE THE PROTEIN NANOCAGE')
+    print('\t\tTOTAL: ', total_interactions_out)
+    print('\tNONZERO INSIDE THE PROTEIN NANOCAGE')
+    print('\t\tTOTAL: ', total_interactions_in)
+    min_interactions_nonzero = min(nonzero_interactions_in)
+    average_interactions_nonzero = sum(nonzero_interactions_in)/len(nonzero_interactions_in)
+    max_interactions_nonzero = max(nonzero_interactions_in)
+    print('\t\tMINIMUM: ', min_interactions_nonzero)  #Not sure if this is relevant since they are nonzero
+    print('\t\tAVERAGE: ', average_interactions_nonzero)
+    print('\t\tMAXIMUM: ', max_interactions_nonzero)
+    # visualize_fine_fit(nn_data_in, bbo_shell_data, surface_crystal_data)
