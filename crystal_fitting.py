@@ -58,11 +58,8 @@ def get_outermost_surface(data):
 
 
 def fit_check(shell, crystal, fit=True):  # Can modify it to exit if the fit is found to be false
-    print('Creating KDTree for protein shell (nanocage)')
     shell_kd = create_kdtree(shell)
-    print('Creating coordinate array for protein shell (nanocage)')
     shell_coord_array = get_coord_array(shell)
-    print('Creating coordinate array for the nanocrystal')
     crysatm_coord_array = get_coord_array(crystal)
     spill_crystal_indices = []  # spill_crystal_coords = []
     clash_shell_indices = []  # clash_shell_coords = []
@@ -88,16 +85,26 @@ def fit_check(shell, crystal, fit=True):  # Can modify it to exit if the fit is 
 
 def fine_fit(shell, crystal, neighbor_cutoff_distance):
     shell_kd = create_kdtree(shell)
+    shell_coord_array = get_coord_array(shell)
     crysatm_coord_array = get_coord_array(crystal)
-    nn_data = []
+    nn_data_in = []
+    nn_data_out = []
     for index in tqdm(range(len(crysatm_coord_array))):
         crysatm_coords = crysatm_coord_array[index]
+        len_crysatm = np.linalg.norm(crysatm_coords)
         nn_indices = shell_kd.query_ball_point(crysatm_coords, neighbor_cutoff_distance)
-        nn_data.append(nn_indices)
-    number_interactions = [len(x) for x in nn_data]
-    number_non_zero_neighbors = len([x for x in nn_data if len(x) > 0]) 
+        nn_in_temp = []
+        nn_out_temp = []
+        for idx_2 in nn_indices:
+            len_nncoord = np.linalg.norm(shell_coord_array[idx_2])
+            if len_nncoord < len_crysatm:
+                nn_out_temp.append(idx_2)
+            else:
+                nn_in_temp.append(idx_2)
+        nn_data_in.append(nn_in_temp)
+        nn_data_out.append(nn_out_temp)
 
-    return nn_data, number_interactions
+    return nn_data_in, nn_data_out
 
 
 def visualize_fine_fit(nn_data, shell_data, crystal_data):
@@ -151,10 +158,24 @@ if __name__ == '__main__':
 
     # Fine fitting metrics
     neighbor_cutoff_distance = 10  # In Angstroms
-    nn_data, nn_no_interactions = fine_fit(bbo_shell_data, surface_crystal_data, neighbor_cutoff_distance)
-    # print(nn_data)
-    # min_interactions = min(nn_no_interactions)
-    # average_interactions = sum(nn_no_interactions)/len(nn_no_interactions)
-    # max_interactions = max(nn_no_interactions)
-    # print(min_interactions, average_interactions, max_interactions)
-    visualize_fine_fit(nn_data, bbo_shell_data, surface_crystal_data)
+    nn_data_in, nn_data_out = fine_fit(bbo_shell_data, surface_crystal_data, neighbor_cutoff_distance)
+    # print(nn_data_in)
+    # print(nn_data_out)
+    nonzero_interactions_in = [len(x) for x in nn_data_in if len(x) > 0]
+    nonzero_interactions_out = [len(x) for x in nn_data_out if len(x) > 0]
+    # print(nonzero_interactions_in)
+    total_interactions_in = len(nonzero_interactions_in)
+    number_interactions_out = len(nonzero_interactions_out)
+    print(total_interactions_in)
+    print(number_interactions_out)
+    # number_non_zero_neighbors_in = len([x for x in nn_data_in if len(x) > 0]) 
+    # print(number_non_zero_neighbors_in)
+
+    min_interactions = min(nonzero_interactions_in)
+    average_interactions = sum(nonzero_interactions_in)/len(nonzero_interactions_in)
+    max_interactions = max(nonzero_interactions_in)
+    print(min_interactions)
+    print(average_interactions)
+    print(max_interactions)
+    # visualize_fine_fit(nn_data, bbo_shell_data, surface_crystal_data)
+
